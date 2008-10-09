@@ -3,6 +3,7 @@ package Parse::BNF;
 use warnings;
 use strict;
 use Carp;
+use Regexp::Common;
 
 use version;
 our $VERSION = qv('0.0.3');
@@ -56,16 +57,25 @@ term :
 
 _EOF_
 
-use Regexp::Common;
+=head2 Lexer
+
+=cut
+
 sub Lexer
   {
-  for ( ... )
+  my ( $parser ) = @_;
+
+  exists $parser->YYData->{LINE} or $parser->YYData->{LINE} = 1;
+
+  $parser->YYData->{INPUT} or return ( '', undef );
+
+  for ($parser->YYData->{INPUT})
     {
     s( ^ ([-A-Za-z]+) )()mx  and return ( 'rule_name', $1 );
     s( ^ (::=) )()mx         and return ( $1,          $1 );
     s( ^ ($RE{quoted}) )()mx and return ( 'literal',   $1 );
-    s( ^ (\n) )mxs           and return ( 'EOL',       $1 );
-    s( ^ (.) )()mx           and return ( $1,          $1 );
+    s( ^ (\n) )()sx          and return ( 'EOL',       $1 );
+    s( ^ (.) )()mxs          and return ( $1,          $1 );
     }
   }
 

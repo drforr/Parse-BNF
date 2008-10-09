@@ -1,20 +1,23 @@
-use Test::More tests => 1;
+use Test::More tests => 10;
 
 BEGIN {
+use Parse::Yapp;
 use_ok( 'Parse::BNF' );
 }
 
 my $lexer_header = <<'_EOF_';
 
-input:
-    #empty
-  | input line '\n' { push(@{$_[1]},$_[2]); $_[1] }
+input :
+    input syntax { push @{$_[1]}, $_[2]; $_[1] }
+  | # empty
   ;
 
-    #++$_[0]->YYData->{LINE};
-line:
+syntax :
     rule_name { [ 'rule_name', $_[1] ] }
-  | error { $_[0]->YYErrok }
+  | literal { [ 'literal', $_[1] ] }
+  | '::=' { [ $_[1], $_[1] ] }
+  | ' ' { [ $_[1], $_[1] ] }
+  | EOL { [ 'EOL', $_[1] ] }
   ;
 
 %%
@@ -40,7 +43,44 @@ sub parse
 
 is_deeply
   (
-  parse( qq{foo-bar} ), [ [ 'rule_name', 12 ] ], q{rule_name.1}
+  parse( q{foo-bar} ), [ [ 'rule_name', 'foo-bar' ] ], q{rule_name.1}
   );
 
-#is_deeply ( parse( qq{-\n} ), [ [ 'minus_sign', q{-} ] ], q{minus_sign.1} );
+is_deeply ( parse( q{::=} ), [ [ '::=', '::=' ] ], q{::=.1} );
+is_deeply ( parse( q{ } ), [ [ ' ', ' ' ] ], q{' '.1} );
+
+is_deeply
+  (
+  parse( q{'1, 2, foo'} ), [ [ 'literal', q{'1, 2, foo'} ] ], q{literal.1}
+  );
+is_deeply
+  (
+  parse( q{"1, 2, foo"} ), [ [ 'literal', q{"1, 2, foo"} ] ], q{literal.2}
+  );
+is_deeply
+  (
+  parse( q{'1, 2, \'foo\''} ),
+  [ [ 'literal', q{'1, 2, \'foo\''} ] ],
+  q{literal.3}
+  );
+is_deeply
+  (
+  parse( q{"1, 2, 'foo'"} ),
+  [ [ 'literal', q{"1, 2, 'foo'"} ] ],
+  q{literal.4}
+  );
+
+is_deeply ( parse( qq{\n} ), [ [ 'EOL', qq{\n} ] ], q{EOL.1} );
+
+is_deeply
+  (
+  parse( q{"1, 2, 'foo'" ::= bar-foo} ),
+  [
+  [ 'literal', q{"1, 2, 'foo'"} ],
+  [ ' ', ' ' ],
+  [ '::=', '::=' ],
+  [ ' ', ' ' ],
+  [ 'rule_name', 'bar-foo' ],
+  ],
+  q{compound.1}
+  );
