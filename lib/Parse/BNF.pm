@@ -7,9 +7,67 @@ use Carp;
 use version;
 our $VERSION = qv('0.0.3');
 
+our $header = <<'_EOF_';
+#%right  '='
+#%left   '-' '+'
+#%left   '*' '/'
+#%left   NEG
+#%right  '^'
 
-# Module implementation here
+%%
+_EOF_
 
+our $grammar = <<'_EOF_';
+
+syntax :
+    rule
+  | rule syntax
+  ;
+rule :
+    opt_whitespace '<' rule_name '>'
+    opt_whitespace '::=' opt_whitespace expression line_end
+  ;
+opt_whitespace :
+     #empty
+  | ' ' opt_whitespace
+  ;
+expression :
+    list
+  | list '|' expression
+  ;
+line_end :
+    opt_whitespace EOL
+  | line_end lne_end
+  ;
+list :
+    term
+  | term opt_whitespace list
+  ;
+term :
+    literal
+  | '<' rule_name '>'
+  ;
+#literal :
+#    '"' text '"'
+#  | '\'' text '\''
+#  ;
+
+%%
+
+_EOF_
+
+use Regexp::Common;
+sub Lexer
+  {
+  for ( ... )
+    {
+    s( ^ ([-A-Za-z]+) )()mx  and return ( 'rule_name', $1 );
+    s( ^ (::=) )()mx         and return ( $1,          $1 );
+    s( ^ ($RE{quoted}) )()mx and return ( 'literal',   $1 );
+    s( ^ (\n) )mxs           and return ( 'EOL',       $1 );
+    s( ^ (.) )()mx           and return ( $1,          $1 );
+    }
+  }
 
 1; # Magic true value required at end of module
 __END__
