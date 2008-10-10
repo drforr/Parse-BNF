@@ -9,11 +9,6 @@ use version;
 our $VERSION = qv('0.0.3');
 
 our $header = <<'_EOF_';
-#%right  '='
-#%left   '-' '+'
-#%left   '*' '/'
-#%left   NEG
-#%right  '^'
 
 %%
 _EOF_
@@ -22,36 +17,24 @@ our $grammar = <<'_EOF_';
 
 syntax :
     rule
-  | rule syntax
   ;
-rule :
-    opt_whitespace '<' rule_name '>'
-    opt_whitespace '::=' opt_whitespace expression line_end
+
+rule : rule_name '::=' terms { [ $_[1], $_[3] ] } ;
+
+terms :
+    term_list
+  | term_list '|' terms { [ $_[1], $_[3] ] }
   ;
-opt_whitespace :
-     #empty
-  | ' ' opt_whitespace
+
+term_list :
+    nonterminal term_list { [ $_[1], $_[2] ] }
+  | nonterminal
   ;
-expression :
-    list
-  | list '|' expression
+
+nonterminal :
+    rule_name
+  | literal
   ;
-line_end :
-    opt_whitespace EOL
-  | line_end lne_end
-  ;
-list :
-    term
-  | term opt_whitespace list
-  ;
-term :
-    literal
-  | '<' rule_name '>'
-  ;
-#literal :
-#    '"' text '"'
-#  | '\'' text '\''
-#  ;
 
 %%
 
@@ -71,11 +54,20 @@ sub Lexer
 
   for ($parser->YYData->{INPUT})
     {
-    s( ^ ([-A-Za-z]+) )()mx  and return ( 'rule_name', $1 );
-    s( ^ (::=) )()mx         and return ( $1,          $1 );
-    s( ^ ($RE{quoted}) )()mx and return ( 'literal',   $1 );
-    s( ^ (\n) )()sx          and return ( 'EOL',       $1 );
-    s( ^ (.) )()mxs          and return ( $1,          $1 );
+    s( ^ <([-A-Za-z]+)> )()mx and return ( 'rule_name', $1 );
+    s( ^ (::=) )()mx and return ( $1, $1 );
+    s( ^ ($RE{quoted}) )()mx and do
+      {
+      my $x = $1;
+      $parser->YYData->{LINE} += $x =~ tr/\n/\n/;
+      return ( 'literal', $x );
+      };
+    s( ^ (\n) )()sx and do
+      {
+      $parser->YYData->{LINE}++;
+      return ( 'EOL', $1 );
+      };
+    s( ^ (.) )()mxs and return ( $1, $1 );
     }
   }
 

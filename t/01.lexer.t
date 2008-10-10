@@ -1,6 +1,7 @@
 use Test::More tests => 10;
 
-BEGIN {
+BEGIN
+{
 use Parse::Yapp;
 use_ok( 'Parse::BNF' );
 }
@@ -43,7 +44,7 @@ sub parse
 
 is_deeply
   (
-  parse( q{foo-bar} ), [ [ 'rule_name', 'foo-bar' ] ], q{rule_name.1}
+  parse( q{<foo-bar>} ), [ [ 'rule_name', 'foo-bar' ] ], q{rule_name.1}
   );
 
 is_deeply ( parse( q{::=} ), [ [ '::=', '::=' ] ], q{::=.1} );
@@ -86,7 +87,7 @@ is_deeply
 
 is_deeply
   (
-  parse( qq{"1, 2, 'foo'" ::= bar-foo\n} ),
+  parse( qq{"1, 2, 'foo'" ::= <bar-foo>\n} ),
     [
     [ q{literal},   q{"1, 2, 'foo'"} ],
     [ q{ },         q{ }             ],
