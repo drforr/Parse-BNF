@@ -51,18 +51,25 @@ is_deeply ( parse( q{ } ), [ [ ' ', ' ' ] ], q{' '.1} );
 
 is_deeply
   (
-  parse( q{'1, 2, foo'} ), [ [ 'literal', q{'1, 2, foo'} ] ], q{literal.1}
+  parse( q{'1, 2, foo'} ),
+  [ [ 'literal', q{'1, 2, foo'} ] ],
+  q{literal.1}
   );
+
 is_deeply
   (
-  parse( q{"1, 2, foo"} ), [ [ 'literal', q{"1, 2, foo"} ] ], q{literal.2}
+  parse( q{"1, 2, foo"} ),
+  [ [ 'literal', q{"1, 2, foo"} ] ],
+  q{literal.2}
   );
+
 is_deeply
   (
   parse( q{'1, 2, \'foo\''} ),
   [ [ 'literal', q{'1, 2, \'foo\''} ] ],
   q{literal.3}
   );
+
 is_deeply
   (
   parse( q{"1, 2, 'foo'"} ),
@@ -70,17 +77,23 @@ is_deeply
   q{literal.4}
   );
 
-is_deeply ( parse( qq{\n} ), [ [ 'EOL', qq{\n} ] ], q{EOL.1} );
+is_deeply
+  (
+  parse( qq{\n} ),
+  [ [ 'EOL', qq{\n} ] ],
+  q{EOL.1}
+  );
 
 is_deeply
   (
-  parse( q{"1, 2, 'foo'" ::= bar-foo} ),
-  [
-  [ 'literal', q{"1, 2, 'foo'"} ],
-  [ ' ', ' ' ],
-  [ '::=', '::=' ],
-  [ ' ', ' ' ],
-  [ 'rule_name', 'bar-foo' ],
-  ],
+  parse( qq{"1, 2, 'foo'" ::= bar-foo\n} ),
+    [
+    [ q{literal},   q{"1, 2, 'foo'"} ],
+    [ q{ },         q{ }             ],
+    [ q{::=},       q{::=}           ],
+    [ q{ },         q{ }             ],
+    [ q{rule_name}, q{bar-foo}       ],
+    [ q{EOL},       qq{\n}           ],
+    ],
   q{compound.1}
   );
