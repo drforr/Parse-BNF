@@ -15,24 +15,29 @@ _EOF_
 
 our $grammar = <<'_EOF_';
 
-syntax :
-    rule
+syntax
+  : rule
+  # The Lexer eats one EOL...
+  | rule EOL syntax
   ;
 
-rule : rule_name '::=' terms { [ $_[1], $_[3] ] } ;
-
-terms :
-    term_list
-  | term_list '|' terms { [ $_[1], $_[3] ] }
+rule
+  : rule_name '::=' terms
+  { $_[0]->YYData->{VARS}{$_[1]} = $_[3] }
   ;
 
-term_list :
-    nonterminal term_list { [ $_[1], $_[2] ] }
-  | nonterminal
+terms
+  : term_list { [ $_[1] ] }
+  | terms '|' term_list { push @{$_[1]}, $_[3]; $_[1] }
   ;
 
-nonterminal :
-    rule_name
+term_list
+  : terminal { [ $_[1] ] }
+  | term_list terminal { push @{$_[1]}, $_[2]; $_[1] }
+  ;
+
+terminal
+  : rule_name
   | literal
   ;
 
@@ -51,23 +56,25 @@ sub Lexer
   exists $parser->YYData->{LINE} or $parser->YYData->{LINE} = 1;
 
   $parser->YYData->{INPUT} or return ( '', undef );
+  $parser->YYData->{INPUT} =~ s( ^ [ \t]+ )()x;
+  $parser->YYData->{INPUT} =~ s( ^ \n )()x;
 
   for ($parser->YYData->{INPUT})
     {
-    s( ^ <([-A-Za-z]+)> )()mx and return ( 'rule_name', $1 );
-    s( ^ (::=) )()mx and return ( $1, $1 );
-    s( ^ ($RE{quoted}) )()mx and do
+    s( ^ <([-A-Za-z]+)> )()x and return ( 'rule_name', $1 );
+    s( ^ (::=) )()x and return ( $1, $1 );
+    s( ^ ($RE{quoted}) )()x and do
       {
       my $x = $1;
       $parser->YYData->{LINE} += $x =~ tr/\n/\n/;
       return ( 'literal', $x );
       };
-    s( ^ (\n) )()sx and do
+    s( ^ (\n) )()x and do
       {
       $parser->YYData->{LINE}++;
       return ( 'EOL', $1 );
       };
-    s( ^ (.) )()mxs and return ( $1, $1 );
+    s( ^ (.) )()x and return ( $1, $1 );
     }
   }
 
@@ -78,11 +85,9 @@ __END__
 
 Parse::BNF - [One line description of module's purpose here]
 
-
 =head1 VERSION
 
 This document describes Parse::BNF version 0.0.1
-
 
 =head1 SYNOPSIS
 
@@ -93,13 +98,11 @@ This document describes Parse::BNF version 0.0.1
     This section will be as far as many users bother reading
     so make it as educational and exeplary as possible.
   
-  
 =head1 DESCRIPTION
 
 =for author to fill in:
     Write a full description of the module and its features here.
     Use subsections (=head2, =head3) as appropriate.
-
 
 =head1 INTERFACE 
 
@@ -108,7 +111,6 @@ This document describes Parse::BNF version 0.0.1
     interface. These normally consist of either subroutines that may be
     exported, or methods that may be called on objects belonging to the
     classes provided by the module.
-
 
 =head1 DIAGNOSTICS
 
@@ -132,7 +134,6 @@ This document describes Parse::BNF version 0.0.1
 
 =back
 
-
 =head1 CONFIGURATION AND ENVIRONMENT
 
 =for author to fill in:
@@ -144,7 +145,6 @@ This document describes Parse::BNF version 0.0.1
   
 Parse::BNF requires no configuration files or environment variables.
 
-
 =head1 DEPENDENCIES
 
 =for author to fill in:
@@ -154,7 +154,6 @@ Parse::BNF requires no configuration files or environment variables.
     module's distribution, or must be installed separately. ]
 
 None.
-
 
 =head1 INCOMPATIBILITIES
 
@@ -166,7 +165,6 @@ None.
     filters are mutually incompatible).
 
 None reported.
-
 
 =head1 BUGS AND LIMITATIONS
 
@@ -185,11 +183,9 @@ Please report any bugs or feature requests to
 C<bug-parse-bnf@rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org>.
 
-
 =head1 AUTHOR
 
 Jeffrey Goff  C<< <jgoff@cpan.org> >>
-
 
 =head1 LICENCE AND COPYRIGHT
 
@@ -197,7 +193,6 @@ Copyright (c) 2008, Jeffrey Goff C<< <jgoff@cpan.org> >>. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.
-
 
 =head1 DISCLAIMER OF WARRANTY
 
