@@ -1,4 +1,4 @@
-use Test::More tests => 5;
+use Test::More tests => 6;
 
 BEGIN
   {
@@ -43,5 +43,12 @@ is_deeply
   (
   parse( q{<A>::=<b><c>|<d>} ),
   { A => [ [ 'b', 'c' ], [ 'd' ] ] },
-  q{<A>::=<b><c>}
+  q{<A>::=<b><c>|<d>}
+  );
+
+is_deeply
+  (
+  parse( qq{<A>::=<b><c>|<d>\n\n<B>::='c'} ),
+  { A => [ [ 'b', 'c' ], [ 'd' ] ], B => [ [ q{'c'} ] ] },
+  q{<A>::=<b><c>|<d>\n\n<B>::='c'}
   );
