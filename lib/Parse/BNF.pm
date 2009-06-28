@@ -45,7 +45,32 @@ terminal
 
 _EOF_
 
+=head1 NAME
+
+Parse::BNF - [One line description of module's purpose here]
+
+=head1 VERSION
+
+This document describes Parse::BNF version 0.0.1
+
+=head1 SYNOPSIS
+
+    use Parse::BNF;
+
+    # XXX Simpler usage here once I've added wrappers
+    
+
+=head1 DESCRIPTION
+
+Parser for basic BNF grammar. I'll add the (more common) EBNF grammar as a
+separate module once I've gotten the wrapper for the basic ::Yapp stuff settled.
+
+=head1 INTERFACE 
+
 =head2 Lexer
+
+Handles the basic BNF tokenizing with a little help from Regexp::Common. If the
+dependencies become too onerous I'll copy in the appropriate RE from there.
 
 =cut
 
@@ -78,40 +103,6 @@ sub Lexer
     }
   }
 
-1; # Magic true value required at end of module
-__END__
-
-=head1 NAME
-
-Parse::BNF - [One line description of module's purpose here]
-
-=head1 VERSION
-
-This document describes Parse::BNF version 0.0.1
-
-=head1 SYNOPSIS
-
-    use Parse::BNF;
-
-=for author to fill in:
-    Brief code example(s) here showing commonest usage(s).
-    This section will be as far as many users bother reading
-    so make it as educational and exeplary as possible.
-  
-=head1 DESCRIPTION
-
-=for author to fill in:
-    Write a full description of the module and its features here.
-    Use subsections (=head2, =head3) as appropriate.
-
-=head1 INTERFACE 
-
-=for author to fill in:
-    Write a separate section listing the public components of the modules
-    interface. These normally consist of either subroutines that may be
-    exported, or methods that may be called on objects belonging to the
-    classes provided by the module.
-
 =head1 DIAGNOSTICS
 
 =for author to fill in:
@@ -136,46 +127,18 @@ This document describes Parse::BNF version 0.0.1
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-=for author to fill in:
-    A full explanation of any configuration system(s) used by the
-    module, including the names and locations of any configuration
-    files, and the meaning of any environment variables or properties
-    that can be set. These descriptions must also include details of any
-    configuration language used.
-  
 Parse::BNF requires no configuration files or environment variables.
 
 =head1 DEPENDENCIES
 
-=for author to fill in:
-    A list of all the other modules that this module relies upon,
-    including any restrictions on versions, and an indication whether
-    the module is part of the standard Perl distribution, part of the
-    module's distribution, or must be installed separately. ]
-
-None.
+Parse::Yapp
+Regexp::Common
 
 =head1 INCOMPATIBILITIES
-
-=for author to fill in:
-    A list of any modules that this module cannot be used in conjunction
-    with. This may be due to name conflicts in the interface, or
-    competition for system or program resources, or due to internal
-    limitations of Perl (for example, many modules that use source code
-    filters are mutually incompatible).
 
 None reported.
 
 =head1 BUGS AND LIMITATIONS
-
-=for author to fill in:
-    A list of known problems with the module, together with some
-    indication Whether they are likely to be fixed in an upcoming
-    release. Also a list of restrictions on the features the module
-    does provide: data types that cannot be handled, performance issues
-    and the circumstances in which they may arise, practical
-    limitations on the size of data sets, special cases that are not
-    (yet) handled, etc.
 
 No bugs have been reported.
 
@@ -216,3 +179,5 @@ RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A
 FAILURE OF THE SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
 SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGES.
+
+1;

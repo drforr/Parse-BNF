@@ -1,10 +1,11 @@
-Build.PL
 Changes
 MANIFEST
 Makefile.PL
 README
 lib/Parse/BNF.pm
 t/00.load.t
+t/01.lexer.t
+t/02.parser.t
 t/perlcritic.t
 t/pod-coverage.t
 t/pod.t
